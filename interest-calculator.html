@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rupee Interest Planner</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #0d0d0d;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px 16px;
+      font-family: 'Georgia', serif;
+      color: #f0ead6;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 540px;
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 2px;
+      overflow: hidden;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.8);
+    }
+
+    .header {
+      background: #0d0d0d;
+      padding: 24px 28px 18px;
+      border-bottom: 1px solid #222;
+    }
+    .eyebrow {
+      font-family: 'Courier New', monospace;
+      font-size: 9px; letter-spacing: 0.3em;
+      color: #c9a84c; text-transform: uppercase; margin-bottom: 6px;
+    }
+    .title { font-size: 20px; font-weight: 400; color: #f0ead6; }
+    .subtitle {
+      font-family: 'Courier New', monospace;
+      font-size: 10px; color: #444; margin-top: 7px; line-height: 1.6;
+    }
+
+    .tabs { display: flex; border-bottom: 1px solid #222; background: #0d0d0d; }
+    .tab-btn {
+      flex: 1; padding: 13px 0; background: none; border: none;
+      border-bottom: 2px solid transparent;
+      color: #555;
+      font-family: 'Courier New', monospace; font-size: 10px;
+      letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active { border-bottom-color: #c9a84c; color: #c9a84c; }
+
+    .body { padding: 22px 28px; }
+
+    .field { margin-bottom: 16px; }
+    label.lbl {
+      display: block;
+      font-family: 'Courier New', monospace; font-size: 9px;
+      letter-spacing: 0.2em; color: #666; text-transform: uppercase; margin-bottom: 7px;
+    }
+
+    input[type=number] {
+      width: 100%; background: #0a0a0a; border: 1px solid #252525;
+      border-radius: 1px; padding: 10px 13px; color: #f0ead6;
+      font-family: 'Courier New', monospace; font-size: 14px;
+      outline: none;
+    }
+    input[type=number]:focus { border-color: #c9a84c44; }
+    input[type=number]::-webkit-inner-spin-button { opacity: 0.3; }
+
+    .input-wrap { display: flex; }
+    .input-wrap input[type=number] {
+      border-right: none;
+      border-radius: 1px 0 0 1px;
+    }
+    .mode-toggle { display: flex; border: 1px solid #252525; border-radius: 0 1px 1px 0; overflow: hidden; }
+    .mode-btn {
+      padding: 0 10px;
+      background: #0a0a0a; color: #555;
+      border: none;
+      font-family: 'Courier New', monospace; font-size: 9px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer; white-space: nowrap;
+    }
+    .mode-btn.active { background: #c9a84c; color: #0d0d0d; }
+
+    .hint {
+      font-family: 'Courier New', monospace; font-size: 9px;
+      color: #c9a84c; margin-top: 6px;
+    }
+
+    .row { display: flex; gap: 14px; }
+    .row .field { flex: 1; }
+
+    .presets { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 7px; }
+    .preset-btn {
+      padding: 4px 9px;
+      font-family: 'Courier New', monospace; font-size: 9px;
+      background: transparent; color: #c9a84c;
+      border: 1px solid #c9a84c; border-radius: 1px; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .preset-btn.active { background: #c9a84c; color: #0d0d0d; }
+
+    .divider { height: 1px; background: #1a1a1a; margin: 8px 0 20px; }
+
+    .result-box {
+      background: #0a0a0a; border: 1px solid #1e1e1e;
+      border-radius: 2px; padding: 18px 22px;
+    }
+
+    .r-row {
+      display: flex; justify-content: space-between;
+      align-items: baseline; margin-bottom: 12px;
+    }
+    .r-label {
+      font-family: 'Courier New', monospace; font-size: 9px;
+      letter-spacing: 0.12em; color: #555; text-transform: uppercase;
+    }
+    .r-val { font-family: 'Georgia', serif; font-size: 15px; color: #c8c0a8; font-style: italic; }
+    .r-val.gold { color: #c9a84c; }
+    .r-val.red  { color: #eb5757; }
+    .r-val.green{ color: #6fcf97; }
+
+    .section-head {
+      font-family: 'Courier New', monospace; font-size: 9px;
+      letter-spacing: 0.2em; color: #333; text-transform: uppercase;
+      border-top: 1px solid #1e1e1e; padding-top: 14px; margin-top: 6px; margin-bottom: 12px;
+    }
+
+    .bar-row { margin-bottom: 10px; }
+    .bar-top { display: flex; justify-content: space-between; margin-bottom: 5px; }
+    .bar-val { font-family: 'Courier New', monospace; font-size: 11px; }
+    .bar-track { background: #1a1a1a; border-radius: 1px; height: 5px; }
+    .bar-fill  { height: 5px; border-radius: 1px; transition: width 0.4s ease; }
+
+    .big-row {
+      display: flex; justify-content: space-between; align-items: center;
+      border-top: 1px solid #222; padding-top: 14px; margin-top: 8px;
+    }
+    .big-row.no-border { border-top: none; padding-top: 0; margin-top: 4px; margin-bottom: 12px; }
+    .big-row.inner-border { border-top: 1px solid #2a2a2a; padding-top: 14px; margin-top: 4px; }
+    .big-label {
+      font-family: 'Courier New', monospace; font-size: 9px;
+      letter-spacing: 0.15em; text-transform: uppercase;
+    }
+    .big-val { font-family: 'Georgia', serif; font-size: 26px; }
+    .badge {
+      font-family: 'Courier New', monospace; font-size: 8px;
+      padding: 2px 6px; border-radius: 1px; margin-left: 8px; letter-spacing: 0.1em;
+    }
+    .badge.green { background: rgba(111,207,151,0.12); color: #6fcf97; }
+    .badge.red   { background: rgba(235,87,87,0.12);   color: #eb5757; }
+    .badge.gold  { background: rgba(201,168,76,0.12);  color: #c9a84c; }
+
+    .empty {
+      text-align: center; font-family: 'Courier New', monospace;
+      font-size: 9px; letter-spacing: 0.2em; color: #272727;
+      text-transform: uppercase; padding: 24px 0;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <div class="eyebrow">Compound + Withdrawal</div>
+    <h1 class="title">Rupee Interest Planner</h1>
+    <div class="subtitle">Each month: interest earned → expense deducted → remainder compounds</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('forward')">→ Forward</button>
+    <button class="tab-btn" onclick="switchTab('backward')">← Backward</button>
+  </div>
+
+  <!-- FORWARD PANEL -->
+  <div class="panel active body" id="panel-forward">
+    <div class="field">
+      <label class="lbl">Starting Amount</label>
+      <input type="number" id="f-principal" placeholder="e.g. 25000" value="25000" oninput="calc()" />
+      <div class="presets" id="f-principal-presets"></div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label class="lbl">Return Rate</label>
+        <div class="input-wrap">
+          <input type="number" id="f-rate" placeholder="e.g. 7.8" value="7.8" oninput="calc()" />
+          <div class="mode-toggle">
+            <button class="mode-btn active" id="f-mode-mo" onclick="setMode('f','monthly')">%/mo</button>
+            <button class="mode-btn" id="f-mode-yr" onclick="setMode('f','annual')">%/yr</button>
+          </div>
+        </div>
+        <div class="hint" id="f-rate-hint"></div>
+      </div>
+      <div class="field">
+        <label class="lbl">Months</label>
+        <input type="number" id="f-months" placeholder="e.g. 120" value="120" oninput="calc()" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="lbl">Monthly Withdrawal / Expense (optional)</label>
+      <input type="number" id="f-expense" placeholder="e.g. 5000" oninput="calc()" />
+    </div>
+
+    <div class="divider"></div>
+    <div id="f-result"><div class="empty">Enter values to see results</div></div>
+  </div>
+
+  <!-- BACKWARD PANEL -->
+  <div class="panel body" id="panel-backward">
+    <div class="field">
+      <label class="lbl">Current / Initial Balance (what you already have)</label>
+      <input type="number" id="b-initial" placeholder="e.g. 25000" oninput="calc()" />
+      <div class="presets" id="b-initial-presets"></div>
+    </div>
+
+    <div class="field">
+      <label class="lbl">Target Final Balance</label>
+      <input type="number" id="b-target" placeholder="e.g. 10000000" oninput="calc()" />
+      <div class="presets" id="b-target-presets"></div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label class="lbl">Return Rate</label>
+        <div class="input-wrap">
+          <input type="number" id="b-rate" placeholder="e.g. 7.8" oninput="calc()" />
+          <div class="mode-toggle">
+            <button class="mode-btn active" id="b-mode-mo" onclick="setMode('b','monthly')">%/mo</button>
+            <button class="mode-btn" id="b-mode-yr" onclick="setMode('b','annual')">%/yr</button>
+          </div>
+        </div>
+        <div class="hint" id="b-rate-hint"></div>
+      </div>
+      <div class="field">
+        <label class="lbl">Months</label>
+        <input type="number" id="b-months" placeholder="e.g. 120" oninput="calc()" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="lbl">Monthly Withdrawal / Expense (optional)</label>
+      <input type="number" id="b-expense" placeholder="e.g. 5000" oninput="calc()" />
+    </div>
+
+    <div class="divider"></div>
+    <div id="b-result"><div class="empty">Enter values to see results</div></div>
+  </div>
+</div>
+
+<script>
+  const state = {
+    fMode: 'monthly',
+    bMode: 'monthly',
+  };
+
+  const PRESETS_P = [
+    { label: '₹10K', value: 10000 },
+    { label: '₹25K', value: 25000 },
+    { label: '₹1L',  value: 100000 },
+    { label: '₹10L', value: 1000000 },
+  ];
+  const PRESETS_TARGET = [
+    { label: '₹10L',  value: 1000000 },
+    { label: '₹1Cr',  value: 10000000 },
+    { label: '₹10Cr', value: 100000000 },
+    { label: '₹56Cr', value: 560000000 },
+  ];
+
+  function fmtCur(n) {
+    return '₹' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(Math.abs(n));
+  }
+  function toWords(n) {
+    const abs = Math.abs(n);
+    const sign = n < 0 ? '−' : '';
+    if (abs >= 1e7) return `${sign}₹${(abs/1e7).toFixed(2)} Cr`;
+    if (abs >= 1e5) return `${sign}₹${(abs/1e5).toFixed(2)} L`;
+    if (abs >= 1e3) return `${sign}₹${(abs/1e3).toFixed(1)} K`;
+    return sign + fmtCur(abs);
+  }
+
+  function simulate(principal, mr, expense, months) {
+    let balance = principal, totalInterest = 0, totalWithdrawn = 0;
+    const history = [];
+    for (let i = 1; i <= months; i++) {
+      const interest = balance * mr;
+      const withdrawal = Math.min(expense, Math.max(0, balance + interest));
+      const net = interest - withdrawal;
+      balance += net;
+      totalInterest += interest;
+      totalWithdrawn += withdrawal;
+      history.push({ month: i, balance, interest, withdrawal, net });
+    }
+    return { finalBalance: balance, totalInterest, totalWithdrawn, history };
+  }
+
+  function calcPrincipal(target, mr, expense, months) {
+    if (mr === 0) return target + expense * months;
+    const factor = Math.pow(1 + mr, months);
+    return (target + expense * ((factor - 1) / mr)) / factor;
+  }
+
+  function getMonthlyRate(rate, mode) {
+    const r = parseFloat(rate) / 100;
+    return mode === 'monthly' ? r : r / 12;
+  }
+
+  function barHTML(label, value, max, color) {
+    const pct = max > 0 ? Math.min(100, (Math.abs(value) / max) * 100) : 0;
+    return `
+      <div class="bar-row">
+        <div class="bar-top">
+          <span class="r-label">${label}</span>
+          <span class="bar-val" style="color:${color}">${toWords(value)}</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      </div>`;
+  }
+
+  function resultHTML(r, months, principalLabel, principalValue, alreadyHave, stillNeeded) {
+    const h0 = r.history[0];
+    const growing = r.finalBalance >= (principalValue || 0);
+    const maxBar = Math.max(r.totalInterest, r.totalWithdrawn, Math.abs(principalValue || 0)) || 1;
+    const netColor = h0.net >= 0 ? '#6fcf97' : '#eb5757';
+
+    let html = `<div class="result-box">
+      <div class="r-row">
+        <span class="r-label">Month 1 — Interest</span>
+        <span class="r-val gold">+ ${fmtCur(h0.interest)}</span>
+      </div>
+      <div class="r-row">
+        <span class="r-label">Month 1 — Withdrawal</span>
+        <span class="r-val red">− ${fmtCur(h0.withdrawal)}</span>
+      </div>
+      <div class="r-row">
+        <span class="r-label">Month 1 — Net Compounded</span>
+        <span class="r-val" style="color:${netColor}">${h0.net >= 0 ? '+' : '−'}${fmtCur(h0.net)}</span>
+      </div>
+      <div class="section-head">After ${months} months</div>
+      ${barHTML('Total Interest Earned', r.totalInterest, maxBar, '#c9a84c')}
+      ${barHTML('Total Withdrawn', r.totalWithdrawn, maxBar, '#eb5757')}`;
+
+    if (principalLabel) {
+      html += `<div class="big-row no-border">
+        <span class="big-label" style="color:#c9a84c">${principalLabel}</span>
+        <span style="font-family:'Georgia',serif;font-size:18px;color:#c9a84c">${toWords(principalValue)}</span>
+      </div>`;
+    }
+
+    if (alreadyHave !== undefined && alreadyHave > 0) {
+      html += `
+        <div class="r-row" style="margin-bottom:8px">
+          <span class="r-label">You already have</span>
+          <span class="r-val green">${toWords(alreadyHave)}</span>
+        </div>
+        <div class="big-row inner-border">
+          <span class="big-label" style="color:#c9a84c">Still Need</span>
+          <span class="big-val" style="color:#c9a84c">${toWords(stillNeeded)}</span>
+        </div>`;
+    } else if (alreadyHave === undefined) {
+      const gc = growing ? '#6fcf97' : '#eb5757';
+      const badgeClass = growing ? 'green' : 'red';
+      html += `<div class="big-row">
+        <div>
+          <span class="big-label" style="color:${gc}">Final Balance</span>
+          <span class="badge ${badgeClass}">${growing ? 'GROWING' : 'DEPLETING'}</span>
+        </div>
+        <span class="big-val" style="color:${gc}">${toWords(r.finalBalance)}</span>
+      </div>`;
+    }
+
+    html += `</div>`;
+    return html;
+  }
+
+  function calc() {
+    // Forward
+    const fP = parseFloat(document.getElementById('f-principal').value);
+    const fRate = document.getElementById('f-rate').value;
+    const fMonths = parseInt(document.getElementById('f-months').value);
+    const fExp = parseFloat(document.getElementById('f-expense').value) || 0;
+    const fHint = document.getElementById('f-rate-hint');
+
+    if (fRate) {
+      fHint.textContent = state.fMode === 'monthly'
+        ? `= ${(parseFloat(fRate) * 12).toFixed(1)}% per year`
+        : `= ${(parseFloat(fRate) / 12).toFixed(2)}% per month`;
+    } else { fHint.textContent = ''; }
+
+    const fResultEl = document.getElementById('f-result');
+    if (fP && fRate && fMonths) {
+      const mr = getMonthlyRate(fRate, state.fMode);
+      const r = simulate(fP, mr, fExp, fMonths);
+      fResultEl.innerHTML = resultHTML(r, fMonths, null, fP, undefined, undefined);
+    } else {
+      fResultEl.innerHTML = '<div class="empty">Enter values to see results</div>';
+    }
+
+    // Backward
+    const bInitial = parseFloat(document.getElementById('b-initial').value) || 0;
+    const bTarget = parseFloat(document.getElementById('b-target').value);
+    const bRate = document.getElementById('b-rate').value;
+    const bMonths = parseInt(document.getElementById('b-months').value);
+    const bExp = parseFloat(document.getElementById('b-expense').value) || 0;
+    const bHint = document.getElementById('b-rate-hint');
+
+    if (bRate) {
+      bHint.textContent = state.bMode === 'monthly'
+        ? `= ${(parseFloat(bRate) * 12).toFixed(1)}% per year`
+        : `= ${(parseFloat(bRate) / 12).toFixed(2)}% per month`;
+    } else { bHint.textContent = ''; }
+
+    const bResultEl = document.getElementById('b-result');
+    if (bTarget && bRate && bMonths) {
+      const mr = getMonthlyRate(bRate, state.bMode);
+      const totalNeeded = calcPrincipal(bTarget, mr, bExp, bMonths);
+      const stillNeeded = Math.max(0, totalNeeded - bInitial);
+      const r = simulate(totalNeeded, mr, bExp, bMonths);
+      bResultEl.innerHTML = resultHTML(r, bMonths, 'Total Starting Amount Needed', totalNeeded, bInitial, stillNeeded);
+    } else {
+      bResultEl.innerHTML = '<div class="empty">Enter values to see results</div>';
+    }
+
+    updatePresets();
+  }
+
+  function setMode(panel, mode) {
+    if (panel === 'f') {
+      state.fMode = mode;
+      document.getElementById('f-mode-mo').classList.toggle('active', mode === 'monthly');
+      document.getElementById('f-mode-yr').classList.toggle('active', mode === 'annual');
+    } else {
+      state.bMode = mode;
+      document.getElementById('b-mode-mo').classList.toggle('active', mode === 'monthly');
+      document.getElementById('b-mode-yr').classList.toggle('active', mode === 'annual');
+    }
+    calc();
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach((b, i) => {
+      b.classList.toggle('active', (i === 0) === (tab === 'forward'));
+    });
+    document.getElementById('panel-forward').classList.toggle('active', tab === 'forward');
+    document.getElementById('panel-backward').classList.toggle('active', tab === 'backward');
+  }
+
+  function buildPresets(containerId, inputId, presets) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    presets.forEach(p => {
+      const btn = document.createElement('button');
+      btn.className = 'preset-btn';
+      btn.textContent = p.label;
+      btn.onclick = () => {
+        document.getElementById(inputId).value = p.value;
+        calc();
+      };
+      container.appendChild(btn);
+    });
+  }
+
+  function updatePresets() {
+    const fVal = parseFloat(document.getElementById('f-principal').value);
+    document.querySelectorAll('#f-principal-presets .preset-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', PRESETS_P[i].value === fVal);
+    });
+    const bIVal = parseFloat(document.getElementById('b-initial').value);
+    document.querySelectorAll('#b-initial-presets .preset-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', PRESETS_P[i].value === bIVal);
+    });
+    const bTVal = parseFloat(document.getElementById('b-target').value);
+    document.querySelectorAll('#b-target-presets .preset-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', PRESETS_TARGET[i].value === bTVal);
+    });
+  }
+
+  // Init
+  buildPresets('f-principal-presets', 'f-principal', PRESETS_P);
+  buildPresets('b-initial-presets', 'b-initial', PRESETS_P);
+  buildPresets('b-target-presets', 'b-target', PRESETS_TARGET);
+  calc();
+</script>
+</body>
+</html>
